@@ -91,7 +91,7 @@ local function battery_usage()
     end
 
     if capacity < 20 and status == "" and (battery_alert == false or capacity < 10) then
-        os.execute("notify-send 'Low Battery' '"..capacity .. "% remaining'")
+        os.execute("notify-send --urgency critical 'Low Battery' '"..capacity .. "% remaining'")
         battery_alert = true
     end
     if capacity > 20 then
