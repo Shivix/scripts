@@ -1,4 +1,4 @@
-BASH_SCRIPTS = screenshot.bash webcam.bash
+BASH_SCRIPTS = screenshot.bash webcam.bash spell.bash
 LUA_SCRIPTS = status_bar.lua
 
 INSTALL_DIR = /usr/local/bin/
