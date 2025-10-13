@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+set -eo pipefail
+
 input=$(dmenu -p "File Name:" </dev/null)
 
 if [ -z "$input" ]; then

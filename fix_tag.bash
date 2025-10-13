@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+set -eo pipefail
+
 tag=$(dmenu -p "Tag:" </dev/null)
 [ -z "$tag" ] && exit
 

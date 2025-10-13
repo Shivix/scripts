@@ -3,12 +3,13 @@
 local posix = require("posix")
 local poll = require("posix.poll")
 
--- TODO: Add the current pid to a file.
+-- TODO: Add the current pid to a file. (delete on close)
 -- Could also consider listening on sockets and select. Can have consistent port and possible to send value from outside.
 posix.signal(posix.SIGUSR1, function()
     --local handle <close> = assert(io.popen("dmenu </dev/null"))
     --local input = handle:read("*all")
 end)
+-- TODO: Check if the pid file exists, if so, don't fully run script, just trigger an update.
 
 local function sleep(seconds)
     local timeout_ms = seconds * 1000

@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+set -eo pipefail
+
 word=$(dmenu -p "Spell check:" </dev/null)
 [ -z "$word" ] && exit
 
