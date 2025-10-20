@@ -1,5 +1,5 @@
 BASH_SCRIPTS = screenshot.bash webcam.bash spell.bash fix_tag.bash read_book.bash
-LUA_SCRIPTS = status_bar.lua
+LUA_SCRIPTS = status_bar.lua batless.lua
 
 INSTALL_DIR = /usr/local/bin/
 
