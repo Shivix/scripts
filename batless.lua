@@ -13,6 +13,9 @@ local master, slave = posix.openpty()
 local pid = unistd.fork()
 if pid == 0 then
     unistd.close(master)
+    unistd.dup2(slave, unistd.STDIN_FILENO)
+    unistd.dup2(slave, unistd.STDOUT_FILENO)
+    unistd.dup2(slave, unistd.STDERR_FILENO)
     unistd.execp(arg[1], { table.unpack(arg, 2) })
     os.exit(1)
 end
