@@ -13,6 +13,7 @@ local master, slave = posix.openpty()
 local pid = unistd.fork()
 if pid == 0 then
     unistd.close(master)
+    unistd.setpid("p", 0, 0)
     unistd.dup2(slave, unistd.STDIN_FILENO)
     unistd.dup2(slave, unistd.STDOUT_FILENO)
     unistd.dup2(slave, unistd.STDERR_FILENO)
@@ -21,6 +22,12 @@ if pid == 0 then
 end
 
 unistd.close(slave)
+
+posix.signal(posix.SIGINT, function()
+    posix.kill(-pid, posix.SIGINT)
+    posix.wait(pid)
+    os.exit(130)
+end)
 
 local pager <close> = assert(io.popen("bat", "w"))
 
