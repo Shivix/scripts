@@ -1,11 +1,11 @@
-BASH_SCRIPTS = screenshot.bash webcam.bash spell.bash fix_tag.bash read_book.bash
-LUA_SCRIPTS = status_bar.lua batless.lua
+BASH_SCRIPTS = screenshot.sh webcam.sh spell.sh fix_tag.sh read_book.sh
+LUA_SCRIPTS = status_bar.lua
 
 INSTALL_DIR = /usr/local/bin/
 
 install:
 	@for script in $(BASH_SCRIPTS); do \
-		install_target="$(INSTALL_DIR)$$(basename -s .bash $$script)"; \
+		install_target="$(INSTALL_DIR)$$(basename -s .sh $$script)"; \
 		cp $$script $$install_target; \
 		chmod +x $$install_target; \
 	done

@@ -100,6 +100,7 @@ local function battery_usage()
     end
     return capacity .. "%" .. status .. wattage
 end
+
 while true do
     local date = os.date("%H:%M %a %d %B")
     local status_line = string.format("CPU: %s @ %s | RAM: %s | %s | %s", cpu_usage(), cpu_temp(), ram_usage(), battery_usage(), date)
