@@ -1,4 +1,4 @@
-BASH_SCRIPTS = screenshot.sh webcam.sh spell.sh fix_tag.sh read_book.sh
+BASH_SCRIPTS = screenshot.sh webcam.sh spell.sh fix_tag.sh read_book.sh backup_usb.sh
 LUA_SCRIPTS = status_bar.lua
 
 INSTALL_DIR = /usr/local/bin/
