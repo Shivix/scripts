@@ -5,9 +5,6 @@ HASH="$(printf "%s" "$SEED" | sha256sum | cut -c1-16)"
 FINGERPRINT="${HASH:0:4}:${HASH:4:4}:${HASH:8:4}:${HASH:12:4}"
 
 YELLOW="\033[33m"
-BRYELLOW="\033[93m"
-BRWHITE="\033[97m"
-BOLD="\033[1m"
 RESET="\033[0m"
 
 COLS=$(tput cols)
@@ -26,7 +23,7 @@ printf "%s${RESET}\n" "$LINE"
 USERTEXT="███████╗ ██╗  ██╗ ██╗ ██╗   ██╗ ██╗ ██╗  ██╗"
 PADDING=$(( (COLS - ${#USERTEXT}) / 2 ))
 LEFT=$(printf '%*s' "$PADDING" '')
-printf "${BRYELLOW}"
+printf "${YELLOW}"
 printf "$LEFT███████╗ ██╗  ██╗ ██╗ ██╗   ██╗ ██╗ ██╗  ██╗\n"
 printf "$LEFT██╔════╝ ██║  ██║ ██║ ██║   ██║ ██║ ╚██╗██╔╝\n"
 printf "$LEFT███████╗ ███████║ ██║ ██║   ██║ ██║  ╚███╔╝\n"
@@ -35,11 +32,13 @@ printf "$LEFT███████║ ██║  ██║ ██║  ╚██�
 printf "$LEFT╚══════╝ ╚═╝  ╚═╝ ╚═╝   ╚═══╝   ╚═╝ ╚═╝  ╚═╝\n"
 printf "${RESET}\n"
 
-printf "${BRYELLOW}${BOLD}Status:         ${RESET}${BRWHITE}ONLINE\n"
-printf "${BRYELLOW}${BOLD}Fingerprint:    ${RESET}${BRWHITE}%s\n" "$FINGERPRINT"
-printf "${BRYELLOW}${BOLD}Terminal:       ${RESET}${BRWHITE}%s\n" "$(alacritty --version)"
-printf "${BRYELLOW}${BOLD}Shell:          ${RESET}${BRWHITE}%s\n" "$($SHELL --version)"
-printf "${BRYELLOW}${BOLD}Window Manager: ${RESET}${BRWHITE}%s\n" "$(dwm -v 2>&1)"
-printf "${BRYELLOW}${BOLD}Editor:         ${RESET}${BRWHITE}%s\n" "${EDITOR:-nvim}"
+printf "${YELLOW}Status:         ${RESET}ONLINE\n"
+printf "${YELLOW}Fingerprint:    ${RESET}%s\n" "$FINGERPRINT"
+printf "${YELLOW}Terminal:       ${RESET}%s\n" "$(alacritty --version || echo "$TERM")"
+printf "${YELLOW}Shell:          ${RESET}%s\n" "$($SHELL --version || echo "$SHELL")"
+printf "${YELLOW}Editor:         ${RESET}%s\n" "${EDITOR:-unknown}"
+if command -v dwm >/dev/null 2>&1; then
+    printf "${YELLOW}Window Manager: ${RESET}%s\n" "$(dwm -v 2>&1)"
+fi
 
-printf "${RESET}${YELLOW}${LINE}${RESET}\n"
+printf "${YELLOW}${LINE}${RESET}\n"
