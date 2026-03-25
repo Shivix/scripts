@@ -41,5 +41,4 @@ if command -v dwm >/dev/null 2>&1; then
     printf "${YELLOW}Window Manager: ${RESET}%s\n" "$(dwm -v 2>&1)"
 fi
 printf "${YELLOW}Packages:       ${RESET}%s\n" "$(xbps-query -l | wc -l) (xbps)"
-
-printf "${YELLOW}${LINE}${RESET}\n"
+printf "\n"
