@@ -36,4 +36,3 @@ printf "${YELLOW}Disk (/home):    ${RESET}%s\n" "$(df -h /home | awk 'NR==2 {pri
 printf "${YELLOW}Filesystem:      ${RESET}%s\n" "$(df -T / | awk 'NR==2 {print $2}')"
 printf "${YELLOW}Host:            ${RESET}%s\n" "$(</sys/devices/virtual/dmi/id/product_version)"
 printf "${YELLOW}RAM:             ${RESET}%s\n\n" "$(free -h | awk '/Mem:/ {print $3 " / " $2}')"
-printf "\n"
