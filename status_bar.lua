@@ -101,8 +101,13 @@ local function battery_usage()
     return capacity .. "%" .. status .. wattage
 end
 
+local sleep_alert = false
 while true do
     local date = os.date("%H:%M %a %d %B")
+    if tonumber(os.date("%H")) >= 23 and sleep_alert == false then
+        os.execute("notify-send 'It is past 11PM, time to stop programming'")
+        sleep_alert = true
+    end
     local status_line = string.format("CPU: %s @ %s | RAM: %s | %s | %s", cpu_usage(), cpu_temp(), ram_usage(), battery_usage(), date)
     os.execute("xsetroot -name '" .. status_line .. "'")
     sleep(15)
