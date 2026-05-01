@@ -21,7 +21,7 @@ printf "${YELLOW}Boot Time:       ${RESET}%s\n\n" "$(awk '{print int($1)"s"}' /p
 printf "${YELLOW}Date:            ${RESET}%s\n" "$(date +'%A %d %b %Y')"
 printf "${YELLOW}Time:            ${RESET}%s\n\n" "$(date +'%H:%M:%S')"
 
-printf "${YELLOW}OS:              ${RESET}%s\n" "$(grep '^PRETTY_NAME=' /etc/os-release | cut -d= -f2- | tr -d '"')"
+printf "${YELLOW}OS:              ${RESET}%s\n" "$(grep '^PRETTY_NAME=' /etc/os-release | cut -d= -f2- | tr -d \")"
 printf "${YELLOW}Kernel:          ${RESET}%s\n" "$(uname -sr)"
 printf "${YELLOW}Boot Parameters: ${RESET}%s\n" "$(awk '{print $1" "$2}' /proc/cmdline)"
 printf "${YELLOW}Init System:     ${RESET}%s\n\n" "$(</proc/1/comm)"

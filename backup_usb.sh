@@ -18,7 +18,7 @@ DIRS=(
     "$HOME/Documents"
     "$HOME/PersonalProjects/Lua"
     "$HOME/Pictures"
-    "$HOME/System/ansible"
+    "$HOME/System/bootstrap"
     "$HOME/System/configs"
     "$HOME/System/luasys"
     "$HOME/System/scripts"
@@ -26,7 +26,7 @@ DIRS=(
 
 DEVICE=$(blkid -L "$LABEL")
 
-if [[ -z "$DEVICE" ]]; then
+if [ -z "$DEVICE" ]; then
     echo "USB drive with label $LABEL not found"
     exit 1
 fi
@@ -45,7 +45,7 @@ mkdir -p "$DEST"
 for dir in "${DIRS[@]}"; do
     relative="${dir#$HOME/}"
     mkdir -p "$DEST/$relative"
-    rsync -aHAX --delete --info=progress2 "$dir/" "$DEST/$relative/"
+    rsync -aHAXv --delete --info=progress2 --exclude ".config/mozilla/" --exclude ".config/pulse/" --exclude ".config/mimeapps.list" --exclude ".config/cni/" --exclude ".config/go/" "$dir/" "$DEST/$relative/"
 done
 
 sync
