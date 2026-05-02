@@ -51,7 +51,20 @@ mkdir -p "$DEST"
 for dir in "${DIRS[@]}"; do
     relative="${dir#$HOME/}"
     mkdir -p "$DEST/$relative"
-    rsync -aHAXv --delete --info=progress2 --exclude ".config/mozilla/" --exclude ".config/pulse/" --exclude ".config/mimeapps.list" --exclude ".config/cni/" --exclude ".config/go/" "$dir/" "$DEST/$relative/"
+
+    if [[ "$dir" == "$HOME/.config" ]]; then
+        excludes=(
+            --exclude "mozilla/"
+            --exclude "pulse/"
+            --exclude "mimeapps.list"
+            --exclude "cni/"
+            --exclude "go/"
+        )
+    else
+        excludes=()
+    fi
+
+    rsync -aHAXv --delete --info=progress2 --delete-excluded "${excludes[@]}" "$dir/" "$DEST/$relative/"
 done
 
 sync
