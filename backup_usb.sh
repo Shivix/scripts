@@ -2,6 +2,12 @@
 
 set -euo pipefail
 
+if command -v doas >/dev/null 2>&1; then
+    SUDO=doas
+else
+    SUDO=sudo
+fi
+
 LABEL="storage"
 MOUNT="/mnt/usb-backup"
 
@@ -31,11 +37,11 @@ if [ -z "$DEVICE" ]; then
     exit 1
 fi
 
-sudo mkdir -p "$MOUNT"
+$SUDO mkdir -p "$MOUNT"
 
 if ! mountpoint -q "$MOUNT"; then
-    sudo mount "$DEVICE" "$MOUNT"
-    sudo chown -R "$USER:$USER" "$MOUNT"
+    $SUDO mount "$DEVICE" "$MOUNT"
+    $SUDO chown -R "$USER:$USER" "$MOUNT"
 fi
 
 DEST="$MOUNT/backup"
@@ -49,5 +55,5 @@ for dir in "${DIRS[@]}"; do
 done
 
 sync
-sudo umount "$MOUNT"
+$SUDO umount "$MOUNT"
 echo "Backup complete"
