@@ -22,9 +22,21 @@ local function sleep(seconds)
     return true
 end
 
+local function sysctl(node)
+    local handle <close> = assert(io.popen("sysctl -n " .. node))
+    local result = handle:read("*line")
+    return result
+end
+
+local function get_uname()
+  local f <close> = assert(io.popen("uname -s 2>/dev/null"))
+  return f:read("*l")
+end
+local uname = get_uname()
+
 local idle_prev
 local total_prev
-local function cpu_usage()
+local function linux_cpu_usage()
     local handle <close> = assert(io.open("/proc/stat"))
     local first_line = handle:read("*line")
     local cpu_stats = {}
@@ -44,16 +56,27 @@ local function cpu_usage()
     total_prev = total
     return math.floor(usage) .. "%"
 end
+local function freebsd_cpu_usage()
+    -- TODO: Either reuse top for other stats, or change to something lighter.
+    local handle <close> = assert(io.popen("top -b -p 0 | grep 'CPU:' | awk '{ print $1\" \"$2 }'"))
+    local first_line = handle:read("*line")
+    return first_line
+end
 
-local function cpu_temp()
+local function linux_cpu_temp()
     local handle = assert(io.popen("sensors 2>/dev/null | grep --max-count=1 ^CPU:"))
     local result = handle:read("*all")
     handle:close()
     local pos = result:find("%+")
     return result:sub(pos + 1):gsub("%s", "")
 end
+local function freebsd_cpu_temp()
+    local handle <close> = assert(io.popen("sysctl -n dev.cpu.0.temperature"))
+    local result = handle:read("*line")
+    return result
+end
 
-local function ram_usage()
+local function linux_ram_usage()
     local total_mem, available_mem
     for line in io.lines("/proc/meminfo") do
         if line:match("^MemTotal:") then
@@ -69,9 +92,29 @@ local function ram_usage()
     local used_mem = total_mem - available_mem
     return math.floor(used_mem / 1024) .. " MB"
 end
+local function freebsd_ram_usage()
+    local page_size = tonumber(sysctl("hw.pagesize")) or 4096
+    local active_pages = tonumber(sysctl("vm.stats.vm.v_active_count"))
+    local wire_pages = tonumber(sysctl("vm.stats.vm.v_wire_count"))
+    local laundry_pages = tonumber(sysctl("vm.stats.vm.v_laundry_count"))
+
+    local used_pages = active_pages + wire_pages + laundry_pages
+    local used_mb = math.floor((used_pages * page_size) / (1024 * 1024))
+    return used_mb .. "MB"
+end
 
 local battery_alert = false
-local function battery_usage()
+local function alert_if_battery_low(capacity, charging)
+    if capacity < 20 and not charging and (battery_alert == false or capacity < 10) then
+        os.execute("notify-send --urgency critical 'Low Battery' '"..capacity .. "% remaining'")
+        battery_alert = true
+    end
+    if capacity > 20 then
+        battery_alert = false
+    end
+end
+
+local function linux_battery_usage()
     local battery_path = "/sys/class/power_supply/BAT0/"
     local status_file = battery_path .. "status"
     local capacity_file = battery_path .. "capacity"
@@ -89,26 +132,62 @@ local function battery_usage()
         local power_now = file:read("*all")
         file:close()
         wattage = string.format(" %.2fW", power_now / 1000000)
+        alert_if_battery_low(capacity, true)
     end
 
-    if capacity < 20 and status == "" and (battery_alert == false or capacity < 10) then
-        os.execute("notify-send --urgency critical 'Low Battery' '"..capacity .. "% remaining'")
-        battery_alert = true
-    end
-    if capacity > 20 then
-        battery_alert = false
-    end
     return capacity .. "%" .. status .. wattage
 end
-
-local sleep_alert = false
-while true do
-    local date = os.date("%H:%M %a %d %B")
-    if tonumber(os.date("%H")) >= 23 and sleep_alert == false then
-        os.execute("notify-send 'It is past 11PM, time to stop programming'")
-        sleep_alert = true
+local function freebsd_battery_usage()
+    local state = tonumber(sysctl("hw.acpi.battery.state"))
+    local rate = sysctl("hw.acpi.battery.rate")
+    local charging = state == 2 or state == 0
+    if charging then
+        rate = "AC"
+    else
+        rate = math.floor(rate / 1000) .. "W"
     end
-    local status_line = string.format("CPU: %s @ %s | RAM: %s | %s | %s", cpu_usage(), cpu_temp(), ram_usage(), battery_usage(), date)
-    os.execute("xsetroot -name '" .. status_line .. "'")
-    sleep(15)
+
+    local life = sysctl("hw.acpi.battery.life")
+    alert_if_battery_low(tonumber(life), charging)
+
+    return life .. "% " .. rate
+end
+
+while not os.execute("xprop -root >/dev/null") do
+    os.execute("sleep 0.2")
+end
+
+local ok, result = pcall(function()
+    local cpu_usage
+    local cpu_temp
+    local ram_usage
+    local battery_usage
+    if uname == "Linux" then
+        cpu_usage = linux_cpu_usage
+        cpu_temp = linux_cpu_temp
+        ram_usage = linux_ram_usage
+        battery_usage = linux_battery_usage
+    elseif uname == "FreeBSD" then
+        cpu_usage = freebsd_cpu_usage
+        cpu_temp = freebsd_cpu_temp
+        ram_usage = freebsd_ram_usage
+        battery_usage = freebsd_battery_usage
+    else
+        error("unsupported OS")
+    end
+
+    local sleep_alert = false
+    while true do
+        local date = os.date("%H:%M %a %d %B")
+        if tonumber(os.date("%H")) >= 23 and sleep_alert == false then
+            os.execute("notify-send 'It is past 11PM, time to stop programming'")
+            sleep_alert = true
+        end
+        local status_line = string.format("%s @ %s | RAM: %s | %s | %s", cpu_usage(), cpu_temp(), ram_usage(), battery_usage(), date)
+        assert(os.execute("xsetroot -name '" .. status_line .. "'"))
+        sleep(15)
+    end
+end)
+if not ok then
+    os.execute("notify-send --urgency critical 'status_bar failed: " .. result .. "'")
 end
