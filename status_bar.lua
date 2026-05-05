@@ -57,10 +57,11 @@ local function linux_cpu_usage()
     return math.floor(usage) .. "%"
 end
 local function freebsd_cpu_usage()
-    -- TODO: Either reuse top for other stats, or change to something lighter.
-    local handle <close> = assert(io.popen("top -b -p 0 | grep 'CPU:' | awk '{ print $1\" \"$2 }'"))
-    local first_line = handle:read("*line")
-    return first_line
+    local h <close> = assert(io.popen("vmstat 1 2 | tail -1"))
+    local line = h:read("*line")
+
+    local idle = tonumber(line:match("(%d+)%s*$"))
+    return tostring(100 - idle) .. "%"
 end
 
 local function linux_cpu_temp()
@@ -183,7 +184,7 @@ local ok, result = pcall(function()
             os.execute("notify-send 'It is past 11PM, time to stop programming'")
             sleep_alert = true
         end
-        local status_line = string.format("%s @ %s | RAM: %s | %s | %s", cpu_usage(), cpu_temp(), ram_usage(), battery_usage(), date)
+        local status_line = string.format("CPU: %s @ %s | RAM: %s | BAT: %s | %s", cpu_usage(), cpu_temp(), ram_usage(), battery_usage(), date)
         assert(os.execute("xsetroot -name '" .. status_line .. "'"))
         sleep(15)
     end
