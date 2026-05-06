@@ -2,7 +2,11 @@
 
 SEED="$USER"
 HASH="$(printf "%s" "$SEED" | sha256sum | cut -c1-16)"
-FINGERPRINT="${HASH:0:4}:${HASH:4:4}:${HASH:8:4}:${HASH:12:4}"
+FINGERPRINT="$(printf '%s:%s:%s:%s' \
+    "$(printf '%s' "$HASH" | cut -c1-4)" \
+    "$(printf '%s' "$HASH" | cut -c5-8)" \
+    "$(printf '%s' "$HASH" | cut -c9-12)" \
+    "$(printf '%s' "$HASH" | cut -c13-16)")"
 
 YELLOW="\033[33m"
 RESET="\033[0m"
@@ -34,11 +38,15 @@ printf "${RESET}\n"
 
 printf "${YELLOW}Status:         ${RESET}ONLINE\n"
 printf "${YELLOW}Fingerprint:    ${RESET}%s\n" "$FINGERPRINT"
-printf "${YELLOW}Terminal:       ${RESET}%s\n" "$(alacritty --version || echo "$TERM")"
-printf "${YELLOW}Shell:          ${RESET}%s\n" "$($SHELL --version || echo "$SHELL")"
+printf "${YELLOW}Terminal:       ${RESET}%s\n" "$(alacritty --version 2>/dev/null || echo "$TERM")"
+printf "${YELLOW}Shell:          ${RESET}%s\n" "$($SHELL --version 2>/dev/null || echo "$SHELL")"
 printf "${YELLOW}Editor:         ${RESET}%s\n" "${EDITOR:-unknown}"
 if command -v dwm >/dev/null 2>&1; then
     printf "${YELLOW}Window Manager: ${RESET}%s\n" "$(dwm -v 2>&1)"
 fi
-printf "${YELLOW}Packages:       ${RESET}%s\n" "$(xbps-query -l | wc -l) (xbps)"
+if command -v xbps-query >/dev/null 2>&1; then
+    printf "${YELLOW}Packages:       ${RESET}%s\n" "$(xbps-query -l | wc -l) (xbps)"
+elif command -v pkg >/dev/null 2>&1; then
+    printf "${YELLOW}Packages:  ${RESET}%s\n" "$(pkg info | wc -l) (pkg)"
+fi
 printf "\n"
