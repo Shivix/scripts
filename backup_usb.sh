@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/usr/bin/env sh
 
 set -euo pipefail
 
@@ -9,62 +9,76 @@ else
 fi
 
 LABEL="storage"
-MOUNT="/mnt/usb-backup"
+MOUNT="/mnt/usb"
 
-DIRS=(
-    "$HOME/.codex"
-    "$HOME/.config"
-    "$HOME/.gnupg"
-    "$HOME/.local/share/fish"
-    "$HOME/.local/share/newsboat"
-    "$HOME/.local/share/zathura"
-    "$HOME/.local/state/lus"
-    "$HOME/.local/state/zua"
-    "$HOME/.ssh"
-    "$HOME/Documents"
-    "$HOME/PersonalProjects/Lua"
-    "$HOME/Pictures"
-    "$HOME/System/bootstrap"
-    "$HOME/System/configs"
-    "$HOME/System/luasys"
-    "$HOME/System/scripts"
-)
-
-DEVICE=$(blkid -L "$LABEL")
-
-if [ -z "$DEVICE" ]; then
-    echo "USB drive with label $LABEL not found"
-    exit 1
-fi
+DIRS="
+.codex/
+.config/
+.gnupg/
+.local/share/fish/
+.local/share/newsboat/
+.local/share/zathura/
+.local/state/lus/
+.local/state/zua/
+.local/state/sh_history
+.ssh/
+Documents/
+PersonalProjects/Lua/
+Pictures/
+System/bootstrap/
+System/configs/
+System/luasys/
+System/overlays/
+System/scripts/
+"
 
 $SUDO mkdir -p "$MOUNT"
 
-if ! mountpoint -q "$MOUNT"; then
-    $SUDO mount "$DEVICE" "$MOUNT"
-    $SUDO chown -R "$USER:$USER" "$MOUNT"
-fi
+case "$(uname -s)" in
+    FreeBSD)
+        DEVICE="/dev/gpt/$LABEL"
+        if [ ! -e "$DEVICE" ]; then
+            echo "USB drive with label $LABEL not found" >&2
+            exit 1
+        fi
+        if ! mount | grep -q "on /mnt/usb "; then
+            $SUDO mount "$DEVICE" "$MOUNT"
+        fi
+        ;;
+    Linux)
+        DEVICE=$(blkid -L "$LABEL")
+        if [ -z "$DEVICE" ]; then
+            echo "USB drive with label $LABEL not found" >&2
+            exit 1
+        fi
+        if ! mountpoint -q "$MOUNT"; then
+            $SUDO mount "$DEVICE" "$MOUNT"
+        fi
+        ;;
+    *)
+        echo "Unsupported operating system" >&2
+        exit 1
+        ;;
+esac
 
-DEST="$MOUNT/backup"
+for relative in $DIRS; do
+    SRC="$HOME/$relative"
+    DEST="$MOUNT/backup/$relative"
 
-mkdir -p "$DEST"
-
-for dir in "${DIRS[@]}"; do
-    relative="${dir#$HOME/}"
-    mkdir -p "$DEST/$relative"
-
-    if [[ "$dir" == "$HOME/.config" ]]; then
-        excludes=(
-            --exclude "mozilla/"
-            --exclude "pulse/"
-            --exclude "mimeapps.list"
-            --exclude "cni/"
-            --exclude "go/"
-        )
-    else
-        excludes=()
+    if [ ! -e "$SRC" ]; then
+        continue
     fi
 
-    rsync -aHAXv --delete --info=progress2 --delete-excluded "${excludes[@]}" "$dir/" "$DEST/$relative/"
+    if [ -d "$SRC" ]; then
+        mkdir -p "$DEST"
+    fi
+
+    excludes=""
+    if [ "$relative" = ".config/" ]; then
+        excludes="--exclude mozilla/ --exclude pulse/ --exclude mimeapps.list --exclude cni/ --exclude go/"
+    fi
+
+    rsync -aHAXv --delete --info=progress2 --delete-excluded $excludes "$SRC" "$DEST"
 done
 
 sync
