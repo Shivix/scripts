@@ -1,4 +1,4 @@
-BASH_SCRIPTS = screenshot.sh webcam.sh spell.sh fix_tag.sh read_book.sh backup_usb.sh operator_fetch.sh machine_fetch.sh
+BASH_SCRIPTS = screenshot.sh webcam.sh spell.sh fix_tag.sh read_book.sh backup_usb.sh operator_fetch.sh machine_fetch.sh doasedit.sh
 LUA_SCRIPTS = status_bar.lua
 
 PREFIX ?= $(HOME)/.local
