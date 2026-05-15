@@ -5,7 +5,9 @@ set -eu
 TODO_FILE="$HOME/.local/state/todo.txt"
 
 cmd=${1:-}
-shift || true
+if [ -n "$cmd" ]; then
+    shift
+fi
 
 case "$cmd" in
     "")
@@ -28,7 +30,13 @@ case "$cmd" in
                 exit 1
                 ;;
         esac
-        sed -i "" "$1d" "$TODO_FILE"
+        if sed --version >/dev/null 2>&1; then
+            # GNU sed
+            sed -i "$1d" "$TODO_FILE"
+        else
+            # BSD sed
+            sed -i "" "$1d" "$TODO_FILE"
+        fi
         ;;
     next|n)
         head -1 "$TODO_FILE"

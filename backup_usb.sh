@@ -21,6 +21,7 @@ DIRS="
 .local/state/lus/
 .local/state/zua/
 .local/state/sh_history
+.local/state/todo.txt
 .ssh/
 Documents/
 PersonalProjects/Lua/
