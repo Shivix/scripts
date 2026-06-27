@@ -122,19 +122,24 @@ local function linux_battery_usage()
     local power_file = battery_path .. "power_now"
 
     local file = assert(io.open(status_file, "r"))
-    local status = file:read("*all") == "Discharging\n" and "" or " AC"
+    local status = ""
+    local charging = false
+    if file:read("*l") ~= "Discharging" then
+        status = " AC"
+        charging = true
+    end
     file:close()
     file = assert(io.open(capacity_file, "r"))
     local capacity = tonumber(file:read("*all"))
     file:close()
     local wattage = ""
-    if status == "" then
+    if not charging then
         file = assert(io.open(power_file, "r"))
         local power_now = file:read("*all")
         file:close()
         wattage = string.format(" %.2fW", power_now / 1000000)
-        alert_if_battery_low(capacity, true)
     end
+    alert_if_battery_low(capacity, charging)
 
     return capacity .. "%" .. status .. wattage
 end

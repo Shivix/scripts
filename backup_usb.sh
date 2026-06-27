@@ -16,9 +16,9 @@ DIRS="
 .config/
 .gnupg/
 .local/share/fish/
-.local/share/newsboat/
 .local/share/zathura/
 .local/state/lus/
+.local/state/newsboat/
 .local/state/zua/
 .local/state/sh_history
 .local/state/todo.txt
