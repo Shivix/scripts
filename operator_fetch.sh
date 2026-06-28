@@ -38,9 +38,9 @@ printf "${RESET}\n"
 
 printf "${YELLOW}Status:         ${RESET}ONLINE\n"
 printf "${YELLOW}Fingerprint:    ${RESET}%s\n" "$FINGERPRINT"
-printf "${YELLOW}Terminal:       ${RESET}%s\n" "$(alacritty --version 2>/dev/null || echo "$TERM")"
-printf "${YELLOW}Shell:          ${RESET}%s\n" "$($SHELL --version 2>/dev/null || echo "$SHELL")"
-printf "${YELLOW}Editor:         ${RESET}%s\n" "${EDITOR:-unknown}"
+printf "${YELLOW}Terminal:       ${RESET}%s\n" "$(alacritty --version 2>/dev/null || echo $TERM)"
+printf "${YELLOW}Shell:          ${RESET}%s\n" "$($SHELL --version 2>/dev/null || echo $SHELL)"
+printf "${YELLOW}Editor:         ${RESET}%s\n" "$(kak -version 2>/dev/null || echo $EDITOR)"
 if command -v dwm >/dev/null 2>&1; then
     printf "${YELLOW}Window Manager: ${RESET}%s\n" "$(dwm -v 2>&1)"
 fi
