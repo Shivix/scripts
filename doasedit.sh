@@ -4,7 +4,7 @@ set -eu
 
 file=$1
 
-temp=$(mktemp doasedit.XXXXX)
+temp=$(mktemp /tmp/doasedit.XXXXX)
 cp "$file" "$temp"
 # Ensure we get a chance to enter password first. Assumes persist is enabled.
 doas true
